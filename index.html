@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINI | Quantum-Entangled Centralized Ledger</title>
+  
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --neon-green: #0f0;
+            --neon-blue: #00f3ff;
+            --bg-color: #050505;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: 1px solid rgba(0, 243, 255, 0.3);
+        }
+        * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--neon-blue) var(--bg-color); }
+      
+        body {
+            margin: 0;
+            background-color: var(--bg-color);
+            color: #e0e0e0;
+            font-family: 'Share Tech Mono', monospace;
+            overflow-x: hidden;
+        }
+        /* --- Layout --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            grid-template-rows: 80px 1fr;
+            height: 100vh;
+        }
+        /* --- Header --- */
+        header {
+            grid-column: 1 / -1;
+            background: rgba(0,0,0,0.9);
+            border-bottom: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 10;
+        }
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+            animation: glitch 2s infinite;
+        }
+        /* --- Sidebar (Wiki Style) --- */
+        aside {
+            background: rgba(10, 10, 10, 0.9);
+            border-right: var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        aside a {
+            color: var(--neon-blue);
+            text-decoration: none;
+            padding: 5px;
+            border-left: 2px solid transparent;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        aside a:hover, aside a.active {
+            border-left: 2px solid var(--neon-green);
+            background: var(--glass);
+            padding-left: 15px;
+        }
+        /* --- Main Content --- */
+        main {
+            position: relative;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .hero-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        h1, h2 { font-family: 'Orbitron', sans-serif; color: white; }
+        h1 { font-size: 3rem; border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px; }
+        .content-block {
+            background: var(--glass);
+            border: var(--border);
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(5px);
+            position: relative;
+        }
+        .buzzword-cloud {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .chart-container, .diagram-container, .three-container {
+            width: 100%;
+            height: 300px;
+            border: 1px dashed #333;
+            position: relative;
+            overflow: hidden;
+            background: #020202;
+            margin: 20px 0;
+        }
+        .three-container canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            color: var(--neon-blue);
+            font-size: 0.9rem;
+        }
+        .slider-container input[type="range"] {
+            flex: 1;
+            background: var(--glass);
+            border: var(--border);
+            height: 4px;
+            border-radius: 2px;
+        }
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            background: var(--neon-green);
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+        }
+        /* --- Right Panel (Stats) --- */
+        .stats-panel {
+            background: #000;
+            border-left: var(--border);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .stat-card {
+            border: 1px solid #333;
+            padding: 10px;
+        }
+      
+        .stat-value {
+            font-size: 1.5rem;
+            color: var(--neon-green);
+        }
+        /* --- Terminal --- */
+        #terminal {
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--neon-green);
+            background: #000;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            border: var(--border);
+        }
+        /* --- Form Styles for Contact --- */
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .contact-form input, .contact-form textarea {
+            background: var(--glass);
+            border: var(--border);
+            color: #e0e0e0;
+            padding: 10px;
+            font-family: inherit;
+        }
+        .contact-form button {
+            background: var(--neon-green);
+            color: #000;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /* --- Whitepaper Content --- */
+        .whitepaper-content {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .whitepaper-content h3 {
+            color: var(--neon-blue);
+            border-bottom: 1px solid var(--neon-blue);
+        }
+        /* --- Animations --- */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .node {
+            fill: var(--neon-blue);
+            animation: pulse 1.5s infinite;
+        }
+        .link {
+            stroke: var(--neon-green);
+            stroke-width: 1;
+            stroke-dasharray: 5;
+            animation: dash 20s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -10; }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container" class="hero-3d"></div>
+    <div class="grid-container">
+        <header>
+            <div class="logo">MINI TOKEN</div>
+            <div style="color: var(--neon-blue); font-size: 0.8rem;">
+                SYSTEM STATUS: <span style="color:var(--neon-green)">QUANTUM STABLE</span> | GPU KERNEL: ACTIVE
+            </div>
+        </header>
+        <aside>
+            <h3>DOCUMENTATION</h3>
+            <a data-section="home">> Home</a>
+            <a data-section="abstract">> Abstract: Silicon Sharding</a>
+            <a data-section="architecture">> Architecture: Centralized-DeFi</a>
+            <a data-section="iot-mining">> IoT Mining (Smart Fridge/Router)</a>
+            <a data-section="big-data">> Big Data Warehousing</a>
+            <a data-section="quantum">> Quantum Decryption</a>
+            <a data-section="tokenomics">> Tokenomics (Eco-Friendly)</a>
+            <br>
+            <h3>RESOURCES</h3>
+            <a data-section="whitepaper">> View Whitepaper</a>
+            <a href="https://github.com/fake/mini-token" target="_blank">> View Source Code (GitHub)</a>
+            <a data-section="contact">> Contact Sales</a>
+        </aside>
+        <main>
+            <!-- Home Section -->
+            <section id="home" class="content-section active">
+                <h1>The Mini Protocol</h1>
+                <div class="buzzword-cloud">
+                    Big Data • Machine Learning • Neural Networks • ETL Pipelines • High Throughput
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Introduction</h2>
+                    <p>
+                        Mini is a <strong>revolutionary centralized cryptocurrency</strong> designed to leverage high-throughput GPU kernels within low-latency IoT environments. Unlike traditional blockchain architectures that rely on inefficient Proof-of-Work, Mini utilizes a proprietary <strong>"Proof-of-WiFi"</strong> consensus mechanism.
+                    </p>
+                    <p>
+                        By integrating <strong>Big Data Warehousing</strong> with <strong>Artificial Intelligence</strong>, we create a seamless ETL pipeline that mines tokens directly using the idle silicon cycles of your <strong>Smart TV, Raspberry Pi, Arduino, or Wireless Router</strong>.
+                    </p>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Network Topology</h2>
+                    <p>The architecture utilizes Quantum-Resistant High Encryption Standards to facilitate rapid decryption of data packets.</p>
+                    <div class="diagram-container">
+                        <svg width="100%" height="100%" id="network-svg">
+                        </svg>
+                    </div>
+                    <div class="slider-container">
+                        <label for="networkSlider">Nodes:</label>
+                        <input type="range" id="networkSlider" min="5" max="100" value="20">
+                        <span id="networkValue">20</span>
+                    </div>
+                    <small style="color:#666; display:block; margin-top:5px;">Fig 1.1: Hyper-threaded Silicon Data Flow across Decentralized Central Nodes.</small>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> IoT Mining Capabilities</h2>
+                    <p>
+                        Our machine learning algorithms optimize the <strong>GPU Kernel</strong> of embedded devices.
+                    </p>
+                    <ul>
+                        <li><strong>Raspberry Pi:</strong> 400 MH/s (Mini Hashes)</li>
+                        <li><strong>Smart Fridge:</strong> 1.2 GH/s (Via Cooling Compressor Logic)</li>
+                        <li><strong>Arduino Uno:</strong> 50 kH/s (Eco-Friendly Mode)</li>
+                    </ul>
+                </div>
+            </section>
+            <!-- Abstract: Silicon Sharding -->
+            <section id="abstract" class="content-section">
+                <h1>Silicon Sharding Abstract</h1>
+                <div class="buzzword-cloud">Sharding • Parallel Processing • Quantum Entanglement • Data Distribution</div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> How It Works</h2>
+                    <p>Silicon Sharding divides computational load across entangled silicon nodes, enabling infinite scalability without latency spikes. Each shard processes independent quantum states, synchronized via WiFi entanglement.</p>
+                    <div class="chart-container">
+                        <canvas id="shardingChart"></canvas>
+                    </div>
+                    <div class="slider-container">
+                        <label for="shardingSlider">Shards:</label>
+                        <input type="range" id="shardingSlider" min="5" max="50" value="12">
+                        <span id="shardingValue">12</span>
+                    </div>
+                    <p>Real-time efficiency: Shards auto-balance load every 100ms.</p>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Visualization</h2>
+                    <div class="three-container" id="sharding3D"></div>
+                    <small>3D Shard Network Simulation: Green nodes = Active Shards, Blue links = Entangled Data Flow.</small>
+                </div>
+            </section>
+            <!-- Architecture: Centralized-DeFi -->
+            <section id="architecture" class="content-section">
+                <h1>Centralized-DeFi Architecture</h1>
+                <div class="buzzword-cloud">Hybrid Consensus • Smart Contracts • Liquidity Pools • Yield Farming</div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Core Components</h2>
+                    <p>Blends centralized control for speed with DeFi primitives for trustlessness. Central ledger entangles with peripheral DeFi nodes.</p>
+                    <div class="diagram-container">
+                        <svg width="100%" height="100%" id="arch-svg"></svg>
+                    </div>
+                    <div class="slider-container">
+                        <label for="archNodesSlider">Nodes:</label>
+                        <input type="range" id="archNodesSlider" min="5" max="50" value="15">
+                        <span id="archNodesValue">15</span>
+                    </div>
+                    <small>Flow Diagram: Central Hub → DeFi Peripherals → Token Yield.</small>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Performance Metrics</h2>
+                    <div class="chart-container">
+                        <canvas id="archChart"></canvas>
+                    </div>
+                    <div class="slider-container">
+                        <label for="archSlider">Central %:</label>
+                        <input type="range" id="archSlider" min="0" max="100" value="60">
+                        <span id="archValue">60</span>
+                    </div>
+                    <p>Real-time TPS: 10,000+ with 99.9% uptime.</p>
+                </div>
+            </section>
+            <!-- IoT Mining -->
+            <section id="iot-mining" class="content-section">
+                <h1>IoT Mining: Smart Devices</h1>
+                <div class="buzzword-cloud">Idle Cycle Harvesting • Edge Computing • Low-Power Consensus</div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> How It Works</h2>
+                    <p>Devices join the network via WiFi, contributing spare CPU/GPU cycles. Smart fridges mine during defrost cycles; routers during idle bandwidth.</p>
+                    <ul>
+                        <li>Setup: Flash MINI firmware → Auto-mine.</li>
+                        <li>Rewards: Proportional to device hashpower.</li>
+                    </ul>
+                    <div class="chart-container">
+                        <canvas id="miningChart"></canvas>
+                    </div>
+                    <div class="slider-container">
+                        <label for="miningSlider">Devices:</label>
+                        <input type="range" id="miningSlider" min="3" max="10" value="3">
+                        <span id="miningValue">3</span>
+                    </div>
+                    <p>Global IoT Hashrate (Real-time).</p>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Device Simulator</h2>
+                    <div class="three-container" id="mining3D"></div>
+                    <small>3D IoT Network: Rotating devices show mining activity.</small>
+                </div>
+            </section>
+            <!-- Big Data Warehousing -->
+            <section id="big-data" class="content-section">
+                <h1>Big Data Warehousing</h1>
+                <div class="buzzword-cloud">ETL Optimization • Petabyte Scalability • AI Indexing</div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> ETL Pipeline</h2>
+                    <p>Extract from IoT streams, Transform via neural nets, Load into quantum shards. Handles 1PB/day with zero downtime.</p>
+                    <div class="diagram-container">
+                        <svg width="100%" height="100%" id="etl-svg"></svg>
+                    </div>
+                    <div class="slider-container">
+                        <label for="etlSlider">Stages:</label>
+                        <input type="range" id="etlSlider" min="3" max="15" value="10">
+                        <span id="etlValue">10</span>
+                    </div>
+                    <small>Pipeline Flow: ETL Stages with Data Volume Metrics.</small>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Storage Growth</h2>
+                    <div class="chart-container">
+                        <canvas id="storageChart"></canvas>
+                    </div>
+                    <div class="slider-container">
+                        <label for="storageSlider">Data Points:</label>
+                        <input type="range" id="storageSlider" min="5" max="20" value="8">
+                        <span id="storageValue">8</span>
+                    </div>
+                    <p>Projected Warehouse Capacity (Real-time Simulation).</p>
+                </div>
+            </section>
+            <!-- Quantum Decryption -->
+            <section id="quantum" class="content-section">
+                <h1>Quantum Decryption</h1>
+                <div class="buzzword-cloud">Post-Quantum Crypto • Grover's Algorithm • Entanglement Keys</div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Mechanism</h2>
+                    <p>Uses entangled qubits for instant decryption across nodes. Resistant to Shor's algorithm attacks.</p>
+                    <p>Process: Encrypt → Entangle → Decrypt in O(1) time.</p>
+                    <div class="chart-container">
+                        <canvas id="decryptChart"></canvas>
+                    </div>
+                    <div class="slider-container">
+                        <label for="decryptScale">Scale:</label>
+                        <input type="range" id="decryptScale" min="0.5" max="2" step="0.1" value="1">
+                        <span id="decryptScaleValue">1x</span>
+                    </div>
+                    <p>Decryption Speed vs. Traditional Methods (Real-time Benchmark).</p>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Quantum Viz</h2>
+                    <div class="three-container" id="quantum3D"></div>
+                    <small>3D Qubit Entanglement: Spinning spheres represent decryption states.</small>
+                </div>
+            </section>
+            <!-- Tokenomics -->
+            <section id="tokenomics" class="content-section">
+                <h1>Eco-Friendly Tokenomics</h1>
+                <div class="buzzword-cloud">Deflationary Burn • Staking Rewards • Carbon-Neutral Mining</div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Distribution</h2>
+                    <p>Total Supply: 1B MINI. 50% IoT Mined, 20% Staking, 30% Liquidity.</p>
+                    <div class="chart-container">
+                        <canvas id="tokenPie"></canvas>
+                    </div>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Supply Curve</h2>
+                    <div class="chart-container">
+                        <canvas id="supplyChart"></canvas>
+                    </div>
+                    <div class="slider-container">
+                        <label for="halvingSlider">Burn %:</label>
+                        <input type="range" id="halvingSlider" min="10" max="50" value="25" step="5">
+                        <span id="halvingValue">25</span>
+                    </div>
+                    <p>Halving Events: Every 4 years, eco-burn reduces supply by 25%.</p>
+                </div>
+            </section>
+            <!-- Whitepaper -->
+            <section id="whitepaper" class="content-section">
+                <h1>MINI Whitepaper</h1>
+                <div class="buzzword-cloud">Quantum Ledger • IoT Consensus • Sustainable Crypto</div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Executive Summary</h2>
+                    <div class="whitepaper-content">
+                        <p>The MINI Protocol introduces a paradigm shift in centralized ledger technology by entangling quantum principles with everyday IoT devices. This whitepaper outlines the architecture, consensus mechanism, and economic model driving MINI's eco-friendly revolution.</p>
+                    </div>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> 1. Introduction to Quantum-Entangled Ledgers</h2>
+                    <div class="whitepaper-content">
+                        <p>Traditional blockchains suffer from energy inefficiency and scalability bottlenecks. MINI resolves this through "Proof-of-WiFi," leveraging ambient RF signals for consensus. Devices like smart fridges contribute hashrate via idle cycles, achieving carbon-neutral mining.</p>
+                        <h3>Key Innovations:</h3>
+                        <ul>
+                            <li>Silicon Sharding: Distributes load across 10^6 shards.</li>
+                            <li>ETL Quantum Pipelines: Real-time data ingestion at 1TB/s.</li>
+                            <li>Entangled Decryption: Zero-knowledge proofs in O(log n) time.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> 2. Tokenomics Model</h2>
+                    <div class="whitepaper-content">
+                        <p>MINI tokens are deflationary, with burns tied to transaction volume. Initial distribution: 40% community mining, 30% ecosystem fund, 20% team (vested), 10% liquidity.</p>
+                        <div class="chart-container">
+                            <canvas id="whitepaperChart"></canvas>
+                        </div>
+                        <p>Figure 2.1: Token Allocation Pie.</p>
+                    </div>
+                </div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> 3. Roadmap</h2>
+                    <div class="whitepaper-content">
+                        <ul>
+                            <li>Q4 2025: Mainnet Launch & IoT Firmware Release.</li>
+                            <li>Q1 2026: DeFi Integration & Quantum Upgrades.</li>
+                            <li>Q2 2026: Global Warehousing Expansion.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="content-block">
+                    <button onclick="downloadWhitepaper()">Download PDF</button>
+                </div>
+            </section>
+            <!-- Contact -->
+            <section id="contact" class="content-section">
+                <h1>Contact Sales</h1>
+                <div class="buzzword-cloud">Partnerships • Enterprise Solutions • Custom IoT Integrations</div>
+                <div class="content-block">
+                    <h2><span style="color:var(--neon-blue)">//</span> Get in Touch</h2>
+                    <form class="contact-form" onsubmit="handleContact(event)">
+                        <input type="text" placeholder="Your Name" required>
+                        <input type="email" placeholder="Your Email" required>
+                        <textarea placeholder="Message" rows="5" required></textarea>
+                        <button type="submit">Send Quantum Signal</button>
+                    </form>
+                </div>
+                <div class="content-block">
+                    <p>Or email: sales@mini-token.com</p>
+                </div>
+            </section>
+        </main>
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="label">LIVE TOKEN PRICE</div>
+                <div class="stat-value" id="price">$0.00042</div>
+            </div>
+          
+            <div class="stat-card">
+                <div class="label">GLOBAL HASHRATE</div>
+                <canvas id="hashChart" height="150"></canvas>
+            </div>
+            <div class="stat-card">
+                <div class="label">TRANSACTION VOLUME</div>
+                <canvas id="volChart" height="150"></canvas>
+            </div>
+            <div class="stat-card">
+                <div class="label">SYSTEM LOGS (ETL PIPELINE)</div>
+                <div id="terminal"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Navigation Handler
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('aside a').forEach(a => a.classList.remove('active'));
+            document.querySelector(`aside a[data-section="${sectionId}"]`).classList.add('active');
+            // Init section-specific content
+            if (sectionId === 'abstract') initShardingCharts();
+            if (sectionId === 'architecture') initArchCharts();
+            if (sectionId === 'iot-mining') initMiningCharts();
+            if (sectionId === 'big-data') initStorageCharts();
+            if (sectionId === 'quantum') initDecryptCharts();
+            if (sectionId === 'tokenomics') initTokenCharts();
+            if (sectionId === 'whitepaper') initWhitepaperCharts();
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('aside a[data-section]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = link.dataset.section;
+                    showSection(section);
+                });
+            });
+            // Home slider
+            const networkSlider = document.getElementById('networkSlider');
+            if (networkSlider) {
+                networkSlider.addEventListener('input', (e) => {
+                    document.getElementById('networkValue').textContent = e.target.value;
+                    generateSVG('network-svg', parseInt(e.target.value));
+                });
+                generateSVG('network-svg', 20);
+            }
+            // Default to home
+            showSection('home');
+        });
+        // --- THREE.JS Global Background ---
+        const initThreeJS = () => {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+          
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+            // Create a complex wireframe object
+            const geometry = new THREE.IcosahedronGeometry(10, 2);
+            const material = new THREE.MeshBasicMaterial({
+                color: 0x00f3ff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15
+            });
+            const sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+            // Add particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 500;
+            const posArray = new Float32Array(particlesCount * 3);
+            for(let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 50;
+            }
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const particlesMaterial = new THREE.PointsMaterial({ size: 0.05, color: 0x00ff00 });
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 0.8);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+            camera.position.z = 20;
+            function animate() {
+                requestAnimationFrame(animate);
+                sphere.rotation.x += 0.001;
+                sphere.rotation.y += 0.002;
+                particlesMesh.rotation.y -= 0.0005;
+                renderer.render(scene, camera);
+            }
+            animate();
+            // Handle Resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        };
+        // Section-Specific 3D Scenes - Complex Optimized
+        function initSharding3D(num = 12) {
+            const container = document.getElementById('sharding3D');
+            if (!container) return;
+            if (container.firstChild) container.removeChild(container.firstChild);
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / 300, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, 300);
+            container.appendChild(renderer.domElement);
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0x00ff00, 1);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+            // Shards: multiple icosahedrons
+            const shards = [];
+            for (let i = 0; i < num; i++) {
+                const geometry = new THREE.IcosahedronGeometry(1, 1);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0x00f3ff,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const shard = new THREE.Mesh(geometry, material);
+                shard.position.set(
+                    (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * 20
+                );
+                scene.add(shard);
+                shards.push(shard);
+            }
+            // Links between shards
+            for (let i = 0; i < num; i += 2) {
+                if (i + 1 < num) {
+                    const points = [shards[i].position, shards[i + 1].position];
+                    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                    const material = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+                    const line = new THREE.Line(geometry, material);
+                    scene.add(line);
+                }
+            }
+            camera.position.z = 15;
+            function animate() {
+                requestAnimationFrame(animate);
+                shards.forEach((shard, index) => {
+                    shard.rotation.x += 0.01;
+                    shard.rotation.y += 0.01 * (index / num + 1);
+                });
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+        function initMining3D(num = 3) {
+            const container = document.getElementById('mining3D');
+            if (!container) return;
+            if (container.firstChild) container.removeChild(container.firstChild);
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / 300, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, 300);
+            container.appendChild(renderer.domElement);
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 0.8);
+            pointLight.position.set(0, 10, 0);
+            scene.add(pointLight);
+            const meshes = [];
+            const hashRates = [0.4, 1.2, 0.8, 2.5, 0.05, 0.3, 1.5, 0.1, 3.0, 0.6];
+            const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0x800000, 0x008000, 0x000080, 0x808000];
+            for (let i = 0; i < num; i++) {
+                const height = (hashRates[i] || Math.random() * 3 + 1) * 2;
+                const geometry = new THREE.BoxGeometry(0.5, height, 0.5);
+                const material = new THREE.MeshBasicMaterial({
+                    color: colors[i % colors.length],
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.x = (i - num / 2) * 1.2;
+                mesh.position.y = height / 2;
+                scene.add(mesh);
+                meshes.push(mesh);
+            }
+            camera.position.set(0, 5, 10);
+            camera.lookAt(0, 0, 0);
+            function animate() {
+                requestAnimationFrame(animate);
+                meshes.forEach((m, i) => {
+                    m.rotation.y += 0.01;
+                    m.position.y += Math.sin(Date.now() * 0.001 + i) * 0.01;
+                });
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+        function initQuantum3D(num = 10) {
+            const container = document.getElementById('quantum3D');
+            if (!container) return;
+            if (container.firstChild) container.removeChild(container.firstChild);
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / 300, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, 300);
+            container.appendChild(renderer.domElement);
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0x00ff00, 1);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+            const spheres = [];
+            for (let i = 0; i < num; i++) {
+                const radius = Math.random() * 1 + 0.5;
+                const geometry = new THREE.SphereGeometry(radius, 16, 16);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0x00ff00,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const sphere = new THREE.Mesh(geometry, material);
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI;
+                sphere.position.x = 8 * Math.sin(phi) * Math.cos(theta);
+                sphere.position.y = 8 * Math.sin(phi) * Math.sin(theta);
+                sphere.position.z = 8 * Math.cos(phi);
+                scene.add(sphere);
+                spheres.push(sphere);
+            }
+            camera.position.z = 20;
+            function animate() {
+                requestAnimationFrame(animate);
+                spheres.forEach((s) => {
+                    s.rotation.x += 0.005;
+                    s.rotation.y += 0.005;
+                    s.position.multiplyScalar(1 + Math.sin(Date.now() * 0.001) * 0.001); // subtle entanglement pulse
+                });
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+        // --- Global Charts & Terminal ---
+        const initGlobalCharts = () => {
+            const ctxHash = document.getElementById('hashChart').getContext('2d');
+            const hashChart = new Chart(ctxHash, {
+                type: 'line',
+                data: {
+                    labels: Array(10).fill(''),
+                    datasets: [{
+                        label: 'TH/s',
+                        data: Array(10).fill(0).map(() => Math.random() * 100),
+                        borderColor: '#0f0',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } },
+                    animation: false
+                }
+            });
+            const ctxVol = document.getElementById('volChart').getContext('2d');
+            const volChart = new Chart(ctxVol, {
+                type: 'bar',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        label: 'Data',
+                        data: [12, 19, 3, 5],
+                        backgroundColor: 'rgba(0, 243, 255, 0.5)',
+                        borderColor: '#00f3ff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } }
+                }
+            });
+            // Real-time update simulation
+            setInterval(() => {
+                const newData = hashChart.data.datasets[0].data;
+                newData.shift();
+                newData.push(Math.random() * 100 + 50);
+                hashChart.update();
+              
+                // Randomize Price
+                const price = (Math.random() * 0.001).toFixed(6);
+                document.getElementById('price').innerText = `$${price}`;
+            }, 1000);
+        };
+        const generateSVG = (svgId, numNodes = 20) => {
+            const svg = document.getElementById(svgId);
+            if (!svg) return;
+            svg.innerHTML = '';
+            const width = svg.clientWidth || 400;
+            const height = svg.clientHeight || 300;
+          
+            // Create random nodes
+            for(let i=0; i<numNodes; i++) {
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                circle.setAttribute("cx", x);
+                circle.setAttribute("cy", y);
+                circle.setAttribute("r", 3);
+                circle.setAttribute("class", "node");
+                svg.appendChild(circle);
+                // Connect lines randomly
+                if (i > 0) {
+                    const prevCircle = svg.querySelector(`circle:nth-child(${i})`);
+                    const prevX = prevCircle.getAttribute('cx');
+                    const prevY = prevCircle.getAttribute('cy');
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute("x1", prevX);
+                    line.setAttribute("y1", prevY);
+                    line.setAttribute("x2", x);
+                    line.setAttribute("y2", y);
+                    line.setAttribute("class", "link");
+                    svg.insertBefore(line, circle);
+                }
+            }
+        };
+        const runTerminal = () => {
+            const term = document.getElementById('terminal');
+            const buzzwords = [
+                "Initializing Quantum Shards...",
+                "Allocating GPU Kernel Memory...",
+                "Connecting to Smart Toaster (Node 492)...",
+                "Decrypting Big Data Packets...",
+                "Optimizing AI Neural Net...",
+                "Compiling Silicon Wafers...",
+                "Running ETL Pipeline...",
+                "Tokenizing Eco-Friendly Assets...",
+                "Verifying Decentralized Authority...",
+                "Uploading to Data Warehouse..."
+            ];
+            setInterval(() => {
+                const line = document.createElement('div');
+                const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+                const randomMsg = buzzwords[Math.floor(Math.random() * buzzwords.length)];
+                line.innerText = `[${timestamp}] ${randomMsg}`;
+                term.appendChild(line);
+                term.scrollTop = term.scrollHeight;
+              
+                if(term.childElementCount > 20) term.removeChild(term.firstChild);
+            }, 800);
+        };
+        // Section-Specific Charts
+        let sectionCharts = {};
+        function initShardingCharts() {
+            const ctx = document.getElementById('shardingChart').getContext('2d');
+            if (sectionCharts.sharding) sectionCharts.sharding.destroy();
+            const initialNum = 12;
+            sectionCharts.sharding = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(initialNum).fill(''),
+                    datasets: [{
+                        label: 'Efficiency %',
+                        data: Array(initialNum).fill(0).map(() => Math.random() * 100),
+                        borderColor: '#00f3ff',
+                        tension: 0.4
+                    }]
+                },
+                options: { 
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } },
+                    animation: { duration: 0 }
+                }
+            });
+            const slider = document.getElementById('shardingSlider');
+            document.getElementById('shardingValue').textContent = initialNum;
+            slider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                document.getElementById('shardingValue').textContent = val;
+                sectionCharts.sharding.data.labels = Array(val).fill('');
+                sectionCharts.sharding.data.datasets[0].data = Array(val).fill(0).map(() => Math.random() * 100);
+                sectionCharts.sharding.update('none');
+                initSharding3D(val);
+            });
+            initSharding3D(initialNum);
+        }
+        function initArchCharts() {
+            const ctx = document.getElementById('archChart').getContext('2d');
+            if (sectionCharts.arch) sectionCharts.arch.destroy();
+            sectionCharts.arch = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Central', 'DeFi'],
+                    datasets: [{ data: [60, 40], backgroundColor: ['#0f0', '#00f3ff'] }]
+                },
+                options: { 
+                    plugins: { legend: { display: false } },
+                    animation: { duration: 0 }
+                }
+            });
+            const slider = document.getElementById('archSlider');
+            document.getElementById('archValue').textContent = 60;
+            slider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                document.getElementById('archValue').textContent = val;
+                sectionCharts.arch.data.datasets[0].data = [val, 100 - val];
+                sectionCharts.arch.update('none');
+            });
+            const nodesSlider = document.getElementById('archNodesSlider');
+            nodesSlider.addEventListener('input', (e) => {
+                document.getElementById('archNodesValue').textContent = e.target.value;
+                generateSVG('arch-svg', parseInt(e.target.value));
+            });
+            generateSVG('arch-svg', 15);
+        }
+        function initMiningCharts() {
+            const ctx = document.getElementById('miningChart').getContext('2d');
+            if (sectionCharts.mining) sectionCharts.mining.destroy();
+            const initialNum = 3;
+            const devices = ['Pi', 'Fridge', 'Router'];
+            const data = [0.4, 1.2, 0.8];
+            sectionCharts.mining = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: devices,
+                    datasets: [{ label: 'GH/s', data: data, backgroundColor: '#0f0' }]
+                },
+                options: { 
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } },
+                    animation: { duration: 0 }
+                }
+            });
+            const slider = document.getElementById('miningSlider');
+            document.getElementById('miningValue').textContent = initialNum;
+            slider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                document.getElementById('miningValue').textContent = val;
+                const allDevices = ['Pi', 'Fridge', 'Router', 'TV', 'Arduino', 'Phone', 'Laptop', 'Watch', 'Car', 'Drone'];
+                const allData = [0.4, 1.2, 0.8, 2.5, 0.05, 0.3, 1.5, 0.1, 3.0, 0.6];
+                sectionCharts.mining.data.labels = allDevices.slice(0, val);
+                sectionCharts.mining.data.datasets[0].data = allData.slice(0, val);
+                sectionCharts.mining.update('none');
+                initMining3D(val);
+            });
+            initMining3D(initialNum);
+            // Simulate real-time
+            setInterval(() => {
+                if (sectionCharts.mining) {
+                    sectionCharts.mining.data.datasets[0].data = sectionCharts.mining.data.datasets[0].data.map(d => d + Math.random() * 0.1);
+                    sectionCharts.mining.update('none');
+                }
+            }, 3000);
+        }
+        function initStorageCharts() {
+            const ctx = document.getElementById('storageChart').getContext('2d');
+            if (sectionCharts.storage) sectionCharts.storage.destroy();
+            const initialNum = 8;
+            sectionCharts.storage = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(initialNum).fill(''),
+                    datasets: [{ label: 'PB Stored', data: Array(initialNum).fill(0).map(() => Math.random() * 1000), borderColor: '#00f3ff' }]
+                },
+                options: { 
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } },
+                    animation: { duration: 0 }
+                }
+            });
+            const slider = document.getElementById('storageSlider');
+            document.getElementById('storageValue').textContent = initialNum;
+            slider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                document.getElementById('storageValue').textContent = val;
+                sectionCharts.storage.data.labels = Array(val).fill('');
+                sectionCharts.storage.data.datasets[0].data = Array(val).fill(0).map(() => Math.random() * 1000);
+                sectionCharts.storage.update('none');
+            });
+            const etlSlider = document.getElementById('etlSlider');
+            etlSlider.addEventListener('input', (e) => {
+                document.getElementById('etlValue').textContent = e.target.value;
+                generateSVG('etl-svg', parseInt(e.target.value));
+            });
+            generateSVG('etl-svg', 10);
+        }
+        function initDecryptCharts() {
+            const ctx = document.getElementById('decryptChart').getContext('2d');
+            if (sectionCharts.decrypt) sectionCharts.decrypt.destroy();
+            sectionCharts.decrypt = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Speed', 'Security', 'Latency'],
+                    datasets: [{ label: 'Quantum', data: [95, 99, 5], borderColor: '#0f0' }]
+                },
+                options: { 
+                    plugins: { legend: { display: false } },
+                    scales: { r: { display: false } },
+                    animation: { duration: 0 }
+                }
+            });
+            const slider = document.getElementById('decryptScale');
+            document.getElementById('decryptScaleValue').textContent = '1x';
+            slider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                document.getElementById('decryptScaleValue').textContent = val.toFixed(1) + 'x';
+                const baseData = [95, 99, 5];
+                const scaled = baseData.map((d, idx) => idx < 2 ? Math.min(100, d * val) : Math.max(1, d / val));
+                sectionCharts.decrypt.data.datasets[0].data = scaled;
+                sectionCharts.decrypt.update('none');
+                initQuantum3D(Math.round(val * 10));
+            });
+            initQuantum3D(10);
+        }
+        function initTokenCharts() {
+            const pieCtx = document.getElementById('tokenPie').getContext('2d');
+            if (sectionCharts.tokenPie) sectionCharts.tokenPie.destroy();
+            sectionCharts.tokenPie = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Mining', 'Staking', 'Liquidity'],
+                    datasets: [{ data: [50, 20, 30], backgroundColor: ['#0f0', '#00f3ff', '#ff0'] }]
+                }
+            });
+            const lineCtx = document.getElementById('supplyChart').getContext('2d');
+            if (sectionCharts.supply) sectionCharts.supply.destroy();
+            const initialBurn = 0.25;
+            const initialSupply = [1000, 1000 * (1 - initialBurn), 1000 * (1 - initialBurn) ** 2];
+            sectionCharts.supply = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2025', '2026', '2027'],
+                    datasets: [{ label: 'Supply', data: initialSupply, borderColor: '#0f0' }]
+                },
+                options: { 
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } },
+                    animation: { duration: 0 }
+                }
+            });
+            const slider = document.getElementById('halvingSlider');
+            document.getElementById('halvingValue').textContent = '25';
+            slider.addEventListener('input', (e) => {
+                const burn = parseFloat(e.target.value) / 100;
+                document.getElementById('halvingValue').textContent = e.target.value;
+                const supply = [1000];
+                for (let i = 1; i < 3; i++) {
+                    supply.push(supply[i - 1] * (1 - burn));
+                }
+                sectionCharts.supply.data.datasets[0].data = supply;
+                sectionCharts.supply.update('none');
+            });
+        }
+        function initWhitepaperCharts() {
+            const ctx = document.getElementById('whitepaperChart').getContext('2d');
+            if (sectionCharts.whitepaper) sectionCharts.whitepaper.destroy();
+            sectionCharts.whitepaper = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Community', 'Fund', 'Team', 'Liquidity'],
+                    datasets: [{ data: [40, 30, 20, 10], backgroundColor: ['#0f0', '#00f3ff', '#ff0', '#f0f'] }]
+                }
+            });
+        }
+        // Utility Functions
+        function downloadWhitepaper() {
+            // Simulate PDF download
+            const content = 'MINI Whitepaper Content... (Full text here in production)';
+            const blob = new Blob([content], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mini-whitepaper.pdf';
+            a.click();
+        }
+        function handleContact(event) {
+            event.preventDefault();
+            alert('Quantum signal sent! Sales will entangle shortly.');
+            event.target.reset();
+        }
+        // --- INIT ALL ---
+        window.onload = () => {
+            initThreeJS();
+            initGlobalCharts();
+            runTerminal();
+        };
+    </script>
+</body>
+</html>
